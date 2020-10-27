@@ -361,7 +361,7 @@ def convert_hatch(e):
                     print("rel")
                     points.append(("arc",arc.start_point,arc.end_point,rel,e.is_counter_clockwise, arc))
                 else:
-                    logging.warning(f"unhandled edgetype {edgetype}. Try to ignore it but mostelike it will fail.")
+                    logging.warning(f"unhandled edgetype {e.EDGE_TYPE}. Try to ignore it but mostelike it will fail.")
             
         if not ezdxf.math.is_close_points(points[0][1],points[-1][2]):
             logging.warning(f"not closed objects are NOT supported within a hatch. distance check failed. Adding straight line to close the gap!")
@@ -496,7 +496,6 @@ def convert_dxf2gerber(filename):
                }
 
     converters['INSERT'] = partial(convert_insert, converters=converters)#needed to allow converter parameter
-    #converters['INSERT'] = lambda x:([],True)
     
     layers = dict()
     for e in dxf.modelspace():

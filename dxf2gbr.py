@@ -3,7 +3,6 @@ import math
 import glob
 import ezdxf
 import numpy
-#import numpy
 import logging
 import matplotlib
 from matplotlib.path import Path
@@ -14,7 +13,6 @@ from functools import partial
 # used file specs:
 # gerber - http://www.ucamco.com/Portals/0/Documents/Ucamco/RS-274X_Extended_Gerber_Format_Specification_201201.pdf
 # dxf 2012 - http://images.autodesk.com/adsk/files/acad_dxf1.pdf
-
 
 default_thickness = 0.01
 autofill = False
@@ -47,10 +45,6 @@ def convert_boundery_to_path(points):
             codes.append(c)
         elif ptype == "arc":#ray arc intersection with infinite ray from (p_x,p_y) to (p_x+1,p_y) of first point of A
             rel,ccw,arc = segment[3:]
-            
-            #print(f"path ({start.x:6.2f}, {start.y:6.2f}) ({end.x:6.2f}, {end.y:6.2f}) ({rel.x:6.2f}, {rel.y:6.2f})",rel.magnitude,end-start)
-            #arc     = ConstructionArc.from_2p_radius(start,end,rel.magnitude, ccw)
-            #print("arc",arc.start_angle, arc.end_angle)
             trans   = Affine2D().scale(rel.magnitude).translate(arc.center.x, arc.center.y)
             path    = Path.arc(arc.start_angle, arc.end_angle)# if ccw else Path.arc(arc.end_angle, arc.start_angle,)
             path    = path.transformed(trans)
@@ -60,12 +54,8 @@ def convert_boundery_to_path(points):
                 codes.append(c)
         else:
             logging.warning("unknown boundary type found (convert_boundery_to_path)")
-    #print("arc")
-    #for v in zip(codes,vertices):
-    #    print(v)
     codes = [1] + [2]*(len(vertices)-1)
-    ret = Path(vertices,codes=codes, closed=True)#.cleaned(simplify=True)#
-    #print("ret",ret.to_polygons())      
+    ret = Path(vertices,codes=codes, closed=True)#.cleaned(simplify=True)#     
     return ret
 
 
@@ -505,14 +495,6 @@ def convert_dxf2gerber(filename):
                     'LWPOLYLINE': convert_lwpolyline,
                }
 
-    converters2 = {  'CIRCLE'    : lambda x:([],True),
-                    'ARC'       : lambda x:([],True),
-                    'LINE'      : lambda x:([],True),
-                    'ELLIPSE'   : lambda x:([],True),
-                    'HATCH'     : convert_hatch,
-                    'LWPOLYLINE': lambda x:([],True),
-               }
-
     converters['INSERT'] = partial(convert_insert, converters=converters)#needed to allow converter parameter
     #converters['INSERT'] = lambda x:([],True)
     
@@ -524,7 +506,6 @@ def convert_dxf2gerber(filename):
             elif append:                    layers[o["layer"]].append(o)
             else:                           layers[o["layer"]].insert(index,o)
             
-    #print([f"BLOCK: {x.name}" for x in dxf.blocks])
     write_gerber(layers)
 
       

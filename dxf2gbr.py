@@ -508,8 +508,6 @@ def convert_dxf2gerber(filename):
             
     write_gerber(layers)
 
-      
-print(sys.argv)
 if 2 <= len(sys.argv):    
     convert_dxf2gerber(sys.argv[1])
 else:

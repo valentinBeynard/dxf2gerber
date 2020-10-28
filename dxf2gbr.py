@@ -216,21 +216,6 @@ def convert_lwpolyline(e):
             start2      = start + ortholine * 0.5 * start_width / ortholine_l
             end1        = end - ortholine * 0.5 * end_width / ortholine_l
             end2        = end + ortholine * 0.5 * end_width / ortholine_l
-
-            #to ensure that no gaps are created between segments we need to
-            #find the intersection points with the previous segment
-            #NOTE: currently disable that part
-##            if w1 and w2 and i > 0 and not points[i-1][1]:
-##                start3,end3,start4,end4 = lines[-1][:4]
-##                ret1 = intersection(start1,end1,start3,end3)
-##                ret2 = intersection(start2,end2,start4,end4)
-##                
-##                if ret1 != None: 
-##                    start1 = ret1
-##                    lines[-1][1] = ret1
-##                if ret2 != None: 
-##                    start2 = ret2
-##                    lines[-1][3] = ret2
         else:
             start1      = start
             start2      = start
@@ -410,15 +395,6 @@ def convert_hatch(e):
         
             last        = None
             last_parity = darkfield
-
-            #debug
-##            segments = path.to_polygons()
-##            points = list()
-##            for s in segments:
-##                start = s[-1]
-##                for p in s:
-##                    points.append(("straight", Vec2(start), Vec2(p)))
-##                    start = p
             
             ret.extend(convert_boundary(layer,points,True))
             

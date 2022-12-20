@@ -65,7 +65,7 @@ def convert_boundery_to_path(points):
 
 def convert_circle(e):
     layer   = e.dxf.layer
-    x,y     = e.dxf.center[:2]
+    x,y     = e.dxf.center[0],e.dxf.center[1]
     r       = e.dxf.radius*2
     device  = "C,%f*"%r if autofill else "C,%fX%f*"%(r,r-default_thickness)
     
@@ -74,7 +74,7 @@ def convert_circle(e):
 
 def convert_arc(e):
     layer               = e.dxf.layer
-    center_x,center_y   = e.dxf.center[:2]
+    center_x,center_y   = e.dxf.center[0],e.dxf.center[1]
     thickness           = e.dxf.thickness
     radius              = e.dxf.radius
     start_angle         = e.dxf.start_angle/180.0*math.pi
@@ -133,8 +133,8 @@ def convert_ellipse(e):
 def convert_line(e):
     layer           = e.dxf.layer
     thickness       = e.dxf.thickness
-    start_x,start_y = e.dxf.start[:2]
-    stop_x,stop_y   = e.dxf.end[:2]
+    start_x,start_y = e.dxf.start[0],e.dxf.start[1]
+    stop_x,stop_y   = e.dxf.end[0],e.dxf.end[1]
     
     device = "C,%f*"%(thickness if thickness else default_thickness)
     return [{"layer":layer,"device":device,"x":start_x,"y":start_y,"style":"D02"},
@@ -144,7 +144,7 @@ def convert_line(e):
 def convert_insert(e, converters, converted_blocks=dict()):
     block_name      = e.dxf.name
     layer           = e.dxf.layer
-    xoffset,yoffset = e.dxf.insert[:2]
+    xoffset,yoffset = e.dxf.insert[0],e.dxf.insert[1]
     xscale          = e.dxf.xscale
     yscale          = e.dxf.yscale
     rotation        = e.dxf.rotation/180*math.pi
@@ -415,10 +415,15 @@ def convert_block(block, converter):
         if element.dxftype() == "HATCH":
             logging.warning("found a HATCH within a INSERT which can cause malfunctional drawing (elements can be erased)")
 
-        child_objects,append = converter[element.dxftype()](element)
-            
-        if append:  block_objects = block_objects + child_objects
-        else:       block_objects = child_objects + block_objects
+        # Assert DXF Type to avoid crash due to unimplemented DXF Type
+        if element.dxftype() in converter.keys():
+
+            child_objects,append = converter[element.dxftype()](element)
+                
+            if append:  block_objects = block_objects + child_objects
+            else:       block_objects = child_objects + block_objects
+        else:
+            print("WARNING - Following DXF Type not implemented : " + element.dxftype())
 
     return block_objects
 
@@ -475,12 +480,17 @@ def convert_dxf2gerber(filename):
     
     layers = dict()
     for e in dxf.modelspace():
-        objects,append = converters[e.dxftype()](e)
-        for index,o in enumerate(objects):
-            if o["layer"] not in layers:    layers[o["layer"]] = [o]
-            elif append:                    layers[o["layer"]].append(o)
-            else:                           layers[o["layer"]].insert(index,o)
-            
+        
+        # Assert DXF Type to avoid crash due to unimplemented DXF Type
+        if e.dxftype() in converters.keys():
+            objects,append = converters[e.dxftype()](e)
+            for index,o in enumerate(objects):
+                if o["layer"] not in layers:    layers[o["layer"]] = [o]
+                elif append:                    layers[o["layer"]].append(o)
+                else:                           layers[o["layer"]].insert(index,o)
+        else:
+            print("WARNING - Following DXF Type not implemented : " + e.dxftype())
+                
     write_gerber(layers)
 
 if 2 <= len(sys.argv):    
